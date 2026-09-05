@@ -1,250 +1,131 @@
 # Homelab
 
-## 1. OVERVIEW
+## OVERVIEW AND PROJECT GOALS
 
-This project uses a Makefile which can selectively build targets.
+    • When I was first gifted the Dell R740XD server by a dear professor who has since moved back to China, I knew I had to put it to good use.  
 
-The default target for 'make' is the executable for task 1 (PA2_Task1), so simply running 'make' will build this target (you could also explicitly specify the target by running 'make 1' to build PA2_Task1).
+    • With 40 logical cores and 188 GB of RAM, I knew the possibilies were endless, but I really had no idea what to do with this as it was massively overkill for anything I ever needed.
 
-To build the executable for task 2 (PA2_Task2) run 'make 2'.
+    • Originally I decided the purpose of the Dell R740XD machine was to function as a vpn server and a file server, so that I may mount a network file share to any of my devices' filesystems and access my data from anywhere in the world.
 
-While the Makefile handles all dependencies, it is helpful to know that Task 1 depends on the following headers and sources:
+    • With nothing but the internet and sheer determination, I set out to build by first homelab ...
 
-    • Task1.c           (main source)
-    • TimeInterval.c    (auxiliary function for calculating timeout values)
-    • TimeInterval.h    (declaration of TimeInterval.c)
+## CONFIGURATIONS
 
-And Task 2 depends on the following headers and sources:
+### Creating the Wireguard VPN
 
-    • Task2.c           (main source)
-    • TimeInterval.c    (auxiliary function for calculating timeout values)
-    • TimeInterval.h    (header file for TimeInterval.c) 
-    • Packet.c          (implementation for the packet "class" that handles serializing and deserializing structs)
-    • Packet.h          (declaration of Packet.c)  
+    • After wiping the original OS and replacing it with Proxmox, the first thing I needed to do was configure a secure VPN to my home newtwork.  
 
-Once both executables have been built, feel free to run 'make clean' to remove unnecessary object files.
+    • I decided to host an LXC container running Wireguard for its customizablilty and zero dependence on third-party authentication providers or centralized management platforms.
 
-## 2. EXECUTION
+    • The first thing I did was configure the Wireguard VPN on the server LXC container:
 
-### Task 1
+        [Interface]
+        Address = 10.0.0.1/24
+        SaveConfig = true
+        PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -A FORWARD -o wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE;
+        PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -D FORWARD -o wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE;
+        ListenPort = 51820
+        PrivateKey = XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXAAA=
 
-Task 1 has several optional parameters specified with default values to minimize the number of arguments the user must supply to the program.
+        [Peer]
+        PublicKey = p8F7QN6rmS9rnsgXFKEt91kvYuGwcnOY7cURz8x7DWU=
+        AllowedIPs = 10.0.0.2/32
 
-Run the following command on the server:
+    • Then I did the same on my laptop:
 
-    • ./PA2_Task1 server  
+        [Interface]
+        PrivateKey = XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXAAA=
+        Address = 10.0.0.2/32
+        MTU = 1420
+        DNS = 1.1.1.1 
 
-Then in a separate or split terminal, run the following command on the client:
+        [Peer]
+        PublicKey = 8Tsc+Fk1HKA0VM1tNIhTRqy2USny3sryiu7+4hnlaDE=
+        AllowedIPs = 0.0.0.0/0
+        Endpoint = [PUBLIC IP]:51820
+        PersistentKeepalive = 21 
 
-    • ./PA2_Task1 client
+### Configuring NFS
 
-The following are the default parameters that were implicitly passed:
+    • Next, I needed to set up the nfs (network filesystem) server on the Dell machine, and configure my PC as the sole nfs client.
 
-    • server_ip = 127.0.0.1     argv[2]
-    • server_port = 12345       argv[3]
-    • num_threads = 4           argv[4]
-    • num_requests = 1000000    argv[5]
-    • pipeline_size = 4         argv[6]
-
-These values can be changed by running the program with the additional command-line arguments specified in that exact order.
-
-The output of running the code using the default parameters gives this output on my Codespace:
-
-    ==============================================================
-    Results For Thread 1: 
-
-    Total packets sent: 1000000 
-    Total packets received: 999743 
-    Number of packets lost: 257
-    ==============================================================
-    Results For Thread 2: 
-
-    Total packets sent: 1000000 
-    Total packets received: 999701 
-    Number of packets lost: 299
-    ==============================================================
-    Results For Thread 3: 
-
-    Total packets sent: 1000000 
-    Total packets received: 999508 
-    Number of packets lost: 492
-    ==============================================================
-    Results For Thread 4: 
-
-    Total packets sent: 1000000 
-    Total packets received: 999585 
-    Number of packets lost: 415
-    ==============================================================
-    ==============================================================
-    Summary Statistics: Finished Processing 4000000 Total Requests 
-
-    Average Packet Loss Rate Across All Threads: 0.0366 %
-    Average Timeout Interval Across all Threads: 573 µs
-    ==============================================================
-
-### Task 2
-
-Task 2 can be run exactly like Task 1, and has the optional parameters specified with the following default values:
-
-    • server_ip = 127.0.0.1     argv[2]
-    • server_port = 12345       argv[3]
-    • num_threads = 4           argv[4]
-    • num_requests = 40000      argv[5]
-    • pipeline_size = 4         argv[6]
-
-The output of running the code using the default parameters gives this output on my Codespace:
-
-    ==============================================================
-    Results For Thread 1: 
-
-    Total packets sent: 40044 
-    Total packets received: 40044 
-    Number of packets lost: 0
-    Number of retransmissions: 44
-    ==============================================================
-    Results For Thread 2: 
-
-    Total packets sent: 40020 
-    Total packets received: 40020 
-    Number of packets lost: 0
-    Number of retransmissions: 20
-    ==============================================================
-    Results For Thread 3: 
-
-    Total packets sent: 40036 
-    Total packets received: 40036 
-    Number of packets lost: 0
-    Number of retransmissions: 36
-    ==============================================================
-    Results For Thread 4: 
-
-    Total packets sent: 40028 
-    Total packets received: 40028 
-    Number of packets lost: 0
-    Number of retransmissions: 28
-    ==============================================================
-    ==============================================================
-    Summary Statistics: Finished Processing 160128 Total Requests 
-
-    Average Packet Loss Rate Across All Threads: 0.0000 %
-    Average Timeout Interval Across all Threads: 295 µs
-    Total Number of Retransmissions Across All Threads: 128
-    ==============================================================
-
-## 3. CISCO MODELLING LABS (CML)
-
-The code for checking whether a packet's given timeout value is within an acceptable range is given below (lines 143 - 154):
-
-    • if (timeout_µs < (10 * num_threads * pipeline_size))
-        {
-            /* Restore timeout and update the timespec struct that epoll_pwait2() actually uses */
-            timeout_µs = (10 * num_threads * pipeline_size);
-            packettiming.TimeoutInterval.tv_nsec = timeout_µs * 1000; /* timespec struct uses nanoseconds */
-        }
-        /* If timeout exceeds 1000x minimum threshold, something has gone seriously wrong */
-        if (timeout_µs > (10000 * num_threads * pipeline_size)) 
-        {
-            puts("server is overloaded or not responding; maximum timeout exceeded");
-            exit(1);
-        }
-
-This code checks whether the time it took for the client to receive a response from the server is within a certain range.
-
-Here the minimum timeout value is in microseconds (µs), and if the program is run with the default parameters (4 threads, pipeline size of 4), then the minimum timeout is calculated as:
-
-    • 4 x 4 x 10 = 160 µs
-
-Similarly the maximum timeout value is simply 1000x this minimum value:
-
-    • 160 x 1000 = 160000 µs = 0.16 s
-
-Every time a timeout occurs, the timeout value will double (temporarily) to avoid a premature timeout for the next packet (lines 176 - 184):
-
-    •  else if (nfds == 0) /* timeout (packet loss) */
-        {
-            /* Double the TimeoutInterval (temporarily) to avoid a premature timeout for the next packet */
-            timeout_µs *= 2;
-
-            /* Update the timespec struct that epoll_pwait2() actually uses */
-            packettiming.TimeoutInterval.tv_sec = timeout_µs / 1000000;
-            packettiming.TimeoutInterval.tv_nsec = (timeout_µs % 1000000) * 1000;
-        }
-
-If too many consecutive timeouts occur, the timeout value will keep doubling until eventually the maximum timeout value is reached.
-
-This will lead the client to assume something has gone wrong with the connection, as denoted by the following error message:
-
-    • server is overloaded or not responding; maximum timeout exceeded
-
-If encountering this error message, sometimes re-running the program once or twice will resolve the issue.
-
-If this doesn't work, re-run the program and try halving one of the last three parameters supplied to the program:
-
-For example, you could try:
-
-    • ./PA2_Task1 client 127.0.0.1 12345 4 1000000 2    (halved pipeline size)
-    • ./PA2_Task1 client 127.0.0.1 12345 2 1000000 4    (halved thread count)
-    • ./PA2_Task1 client 127.0.0.1 12345 4 500000 4    (halved number of requests)
-
-Additionally, this approach can be adopted for Task 2 if necessary.
-
-The hardware specifications of your device or whether or not the program is being run in a native Linux environment will greatly impact the likelihood of this error occurring.
-
-## 4. REMARKS
-
-Task 2, while functional, is not completely robust and, dare I say, correct.
-
-In the run_server() function, there is a line of code that is as follows:
+        * it should be noted for context that during the Proxmox installation, I selected zfs (RAID 0) for the root file system, which creates a default zfs pool named "rpool"
+        * a dataset in zfs is a logical filesystem created inside a storage pool
+        * zfs is an extremely efficient filesystem that uses a copy-on-write resource management technique and comes with built in volume managment capabilites
     
-    • server_packet.expected_seqnum = client_packet.next_seqnum + 1; (line 414) 
+    • I began by creating the dataset named "storage", which I mounted to /media/storage; the output of the "zfs list" command on the server is shown below:
 
-Then later it just echoes this information back to the client:
+        root@sams-server:~# zfs list
+        NAME                           USED  AVAIL  REFER  MOUNTPOINT
+        rpool                         18.9G  1.74T   104K  /rpool
+        rpool/ROOT                    3.20G  1.74T    96K  /rpool/ROOT
+        rpool/ROOT/pve-1              3.20G  1.74T  3.20G  /
+        rpool/data                    8.36G  1.74T    96K  /rpool/data
+        rpool/data/subvol-100-disk-0  1.08G  2.92G  1.08G  /rpool/data/subvol-100-disk-0
+        rpool/data/vm-101-disk-0       104K  1.74T   104K  -
+        rpool/data/vm-101-disk-1      7.28G  1.74T  7.28G  -
+        rpool/storage                 7.15G   493G  7.15G  /media/storage
+        rpool/var-lib-vz               124M  1.74T   124M  /var/lib/vz
 
-    • SerializeServer(&server_packet, echo_buf);            (line 420)                 
-    • sentMsgSize = sendto(UDPSock, echo_buf,  . . . );     (line 421) 
+        * the storage dataset was created via the "zfs create rpool/storage" command
 
-The glaring issue here is that the server isn't actually "expecting" anything specific. 
+    • Now that the dataset that will hold on my files is created, I needed nfs to actually export this directory:
 
-If Thread 1 sends packets 0, 1, 2, 3 in a burst, then:
+        root@sams-server:~# zfs set mountpoint=/media/storage rpool/storage 
 
-    Server receives 0, updates expected_seqnum to 1
+    • To prevent the dataset from consuming the entire 1.74 TB system pool should it grow too large (not that it ever will), I set a 500 GB cap, or "quota" on the dataset:
 
-    Server receives 1, updates expected_seqnum to 2
-                .
-                .
-                .
+        root@sams-server:~# zfs set quota=500G rpool/storage
 
-If the ACKs are delayed and the client times out, the client resets its loop sliding window to its base:
+    • The last server-side configuration was setting up the host to export the dataset exclusively to your local subnet by modifying the /etc/exports configuration file:
 
-    • i = client_packet.base;   (in client_thread_func() line 217)
+        # /etc/exports: the access control list for filesystems which may be exported
+        #               to NFS clients.  See exports(5).
+        #
+        # Example for NFSv2 and NFSv3:
+        # /srv/homes       hostname1(rw,sync,no_subtree_check) hostname2(ro,sync,no_subtree_check)
+        #
+        # Example for NFSv4:
+        # /srv/nfs4        gss/krb5i(rw,sync,fsid=0,crossmnt,no_subtree_check)
+        # /srv/nfs4/homes  gss/krb5i(rw,sync,no_subtree_check)
+        #
 
-Then the send loop for the client repeats and the following code is executed:
+        /media/storage 192.168.4.26(rw,sync,no_subtree_check)
 
-    • client_packet.next_seqnum = i;                                    (line 142)
-    • sentMsgSize = sendto(packetdata->client_fd, send_buf, . . .);     (line 147)
+    • After exporting the share (/media/storage) and starting the service, I was good to go:
 
-Later after the client resends packet with sequence number 'i', the server receives 'i' again and does the following: 
+        root@sams-server:~# exportfs -rv
+        root@sams-server:~# systemctl enable --now nfs-kernel-server
 
-    • server_packet.expected_seqnum = client_packet.next_seqnum + 1;    (line 414)
+    • On the NFS client (My PC), I installed both nfs and autofs, so that the filesytem will be mounted automatically:
 
-Essentially the server "acknowledges" any packet it sees, rather than waiting for the next expected one.
+        samuel@sam-pc:~$ sudo apt install nfs-common autofs
 
-The correct behavior should be to simply discard packet with sequence number 'i' and wait for the next in-order packet.
+    • Next, I edited the autofs master file which specifies which map files the autofs daemon should read:
 
-I bring this to the reader's attention because if we recall the default parameter for num_requests for this task:
+        #
+        # Sample auto.master file
+        # This is a 'master' automounter map and it has the following format:
+        # mount-point [map-type[,format]:]map [options]
+        # For details of the format look at auto.master(5).
+        #
+        /mnt /etc/auto.nfs --timeout=180 browse
 
-    • num_requests = 40000      argv[5]
+        * here, the /mnt tells autofs that it manages the entire /mnt parent directory as a base folder
+        * /etc/auto.nfs is the actual map file containing the relative paths to build inside /mnt
+        * the timeout specifies how long the nfs share should be mounted before it is unmounted due to inactivity
+        * the "browse" keyword I found was very helpful as it keeps the subfolder (like /mnt/nfs) visible in ls or the GUI file manager even when the NFS share is currently unmounted
 
-This value had to be set relatively low, otherwise a "runaway" scenario was observed where the control condition of the client loop:
+    • The last file to edit was the map file itself (/etc/auto.nfs):
 
-    • while (client_packet.base < num_requests && !stop)
+        nfs -fstype=nfs,rw,soft,intr 192.168.4.27:/media/storage
 
-Will always be true and the loop never terminates unless the user interrupts the client program (ctrl + c).
+        * where nfs is the local mount on my PC for the nfs file share, and 192.168.4.27:/media/storage is the server IP address and filepath to the actual files being exported
 
-I'm not sure if the issue described above is causing this "runaway" behavior or not, and I was not able to debug it in time.
+    • Of course we can't forget ...
 
-If the grader has any suggestions as to what could be happening, please send me an email at 
+        samuel@sam-pc:~$ sudo systemctl enable --now autofs
 
-    sjab225@uky.edu
 
-Thank you for reading, and I look forward to any suggestions for improvement!
+## 3. CISCO CML
