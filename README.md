@@ -48,7 +48,7 @@
         Endpoint = [PUBLIC IP]:51820
         PersistentKeepalive = 21 
 
-### Configuring NFS
+### Configuring The NFS Server
 
     • Next, I needed to set up the nfs (network filesystem) server on the Dell machine, and configure my PC as the sole nfs client.
 
@@ -80,7 +80,7 @@
 
         root@sams-server:~# zfs set quota=500G rpool/storage
 
-    • The last server-side configuration was setting up the host to export the dataset exclusively to your local subnet by modifying the /etc/exports configuration file:
+    • The next server-side configuration was setting up the host to export the dataset exclusively to my local subnet by modifying the /etc/exports configuration file:
 
         # /etc/exports: the access control list for filesystems which may be exported
         #               to NFS clients.  See exports(5).
@@ -99,6 +99,31 @@
 
         root@sams-server:~# exportfs -rv
         root@sams-server:~# systemctl enable --now nfs-kernel-server
+
+    • To adhere to the principle of least priviledge, I created the "nfsusers" group and added the "samuel"; only this user/group has permission to view the nfs files.
+
+        root@sams-server:~# groupadd nfsusers
+
+    • Note that since the samuel user already existed, I simply just added it to the nfsusers group and unlocked its bash shell, since its shell had disabled login by default (/usr/sbin/nologin):
+
+        root@sams-server:~# usermod -aG nfsusers samuel
+        root@sams-server:~# chsh -s /bin/bash samuel
+
+    • We should note that the user samuel doesn't have a home directory yet, so we created it and assign the proper ownership:
+
+        root@sams-server:~# mkhomedir_helper samuel
+        root@sams-server:~# chown -R samuel:nfsusers /home/samuel 
+
+        * note the last command above is needed later when we configure ssh keys for the sshfs client (my laptop)
+
+    • Finally, we update the permissions on the /media/storage dataset so that any user in the nfsusers group had read and write access:
+
+        root@sams-server:~# chown -R samuel:nfsusers /media/storage
+        root@sams-server:~# chmod -R 775 /media/storage
+
+    • This allows daily file operations over nfs without relying on root access.
+
+### Configuring The NFS Client
 
     • On the NFS client (My PC), I installed both nfs and autofs, so that the filesytem will be mounted automatically:
 
@@ -129,5 +154,27 @@
 
         samuel@sam-pc:~$ sudo systemctl enable --now autofs
 
+### Configuring The SSHFS Client
+
+    • While nfs is lightning fast over a local network, it suffers greatly over a WAN or VPN with high latency due it being a "chatty" protocol.
+
+    • Since I mostly use my laptop while away from home, I'll configure an sshfs mount to get faster upload and download speeds to/from my file server.
+
+    • Regarding security and permissions, I restricted my laptop's remote access to the unprivileged "samuel" account rather than root.
+
+        - if my laptop every got compromised (either hacked or stolen), I want to be sure that the potential blast radius is limited strictly to the /media/storage dataset
+
+    • Configuration was relatively simple:
+
+        1. I copied my laptop's public SSH key to the ./ssh/authorized_keys file on the server's samuel account.
+
+        2. Next, I installed the sshfs utility on my laptop:
+
+            samuel@sam-laptop:~$ sudo apt install sshfs
+
+        3. Finally, I created a local mount point and established the remote connection:
+
+            samuel@sam-laptop:~$ mkdir ~/mnt/sftp
+            samuel@sam-laptop:~$ sshfs samuel@192.168.4.27:/media/storage ~/mnt/sftp -o reconnect,ServerAliveInterval=15
 
 ## 3. CISCO CML
