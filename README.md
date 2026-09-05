@@ -6,9 +6,11 @@
 
     • With 40 logical cores and 188 GB of RAM, I knew the possibilies were endless, but I really had no idea what to do with this as it was massively overkill for anything I ever needed.
 
-    • Originally I decided the purpose of the Dell R740XD machine was to function as a vpn server and a file server, so that I may mount a network file share to any of my devices' filesystems and access my data from anywhere in the world.
+    • Originally I decided the purpose of the Dell R740XD machine was to function as a VPN server and a file server, so that I may mount a network file share to any of my devices' filesystems and access my data from anywhere in the world; so far I have not strayed too far from this original goal. 
 
-    • With nothing but the internet and sheer determination, I set out to build by first homelab ...
+        * to get a visual reference of my setup so far, please refer to the "architecture.txt" file in the "Homelab-Infrastructure" directory
+
+    • I will continually update this README as I add new services to this machine.  With that being said, equipped with nothing but the internet and sheer determination, I set out to build and document my first homelab ...
 
 ## CONFIGURATIONS
 
