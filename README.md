@@ -44,7 +44,7 @@
 
         [Peer]
         PublicKey = 8Tsc+Fk1HKA0VM1tNIhTRqy2USny3sryiu7+4hnlaDE=
-        AllowedIPs = 0.0.0.0/0
+        AllowedIPs = 10.0.0.0/24, 192.168.4.0/24
         Endpoint = [PUBLIC IP]:51820
         PersistentKeepalive = 21 
 
