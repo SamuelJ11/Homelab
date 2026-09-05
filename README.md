@@ -4,7 +4,7 @@
 
     • When I was first gifted the Dell R740XD server by a dear professor who has since moved back to China, I knew I had to put it to good use.  
 
-    • With 40 logical cores and 188 GB of RAM, I knew the possibilies were endless, but I really had no idea what to do with this as it was massively overkill for anything I ever needed.
+    • With 40 logical cores and 188 GB of RAM, I knew the possibilities were endless, but I really had no idea what to do with this as it was massively overkill for anything I ever needed.
 
     • Originally I decided the purpose of the Dell R740XD machine was to function as a VPN server and a file server, so that I may mount a network file share to any of my devices' filesystems and access my data from anywhere in the world; so far I have not strayed too far from this original goal. 
 
@@ -16,7 +16,7 @@
 
 ### Creating the Wireguard VPN
 
-    • After wiping the original OS and replacing it with Proxmox, the first thing I needed to do was configure a secure VPN to my home newtwork.  
+    • After wiping the original OS and replacing it with Proxmox, the first thing I needed to do was configure a secure VPN to my home network.  
 
     • I decided to host an LXC container running Wireguard for its customizablilty and zero dependence on third-party authentication providers or centralized management platforms.
 
