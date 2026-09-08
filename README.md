@@ -25,8 +25,8 @@
         [Interface]
         Address = 10.0.0.1/24
         SaveConfig = true
-        PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -A FORWARD -o wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE;
-        PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -D FORWARD -o wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE;
+        PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -A FORWARD -o wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o vmbr0 -j MASQUERADE;
+        PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -D FORWARD -o wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o vmbr0 -j MASQUERADE;
         ListenPort = 51820
         PrivateKey = XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXAAA=
 
@@ -38,13 +38,13 @@
 
         [Interface]
         PrivateKey = XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXAAA=
-        Address = 10.0.0.2/32
+        Address = 10.0.0.2/24
         MTU = 1420
-        DNS = 1.1.1.1 
+        #DNS = 1.1.1.1  <--- comment this out to use your public wifi's DNS resolver
 
         [Peer]
         PublicKey = 8Tsc+Fk1HKA0VM1tNIhTRqy2USny3sryiu7+4hnlaDE=
-        AllowedIPs = 10.0.0.0/24, 192.168.4.0/24
+        AllowedIPs = 10.0.0.0/24, 192.168.4.0/24, 172.16.0.0/16
         Endpoint = [PUBLIC IP]:51820
         PersistentKeepalive = 21 
 
