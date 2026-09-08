@@ -20,19 +20,25 @@
 
     • I decided to host an LXC container running Wireguard for its customizablilty and zero dependence on third-party authentication providers or centralized management platforms.
 
-    • The first thing I did was configure the Wireguard VPN on the server LXC container:
+    • The first thing I did was configure the Wireguard VPN configuration file on the server LXC container:
 
         [Interface]
         Address = 10.0.0.1/24
         SaveConfig = true
-        PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -A FORWARD -o wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o vmbr0 -j MASQUERADE;
-        PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -D FORWARD -o wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o vmbr0 -j MASQUERADE;
+        PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -A FORWARD -o wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE;
+        PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -D FORWARD -o wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE;
         ListenPort = 51820
         PrivateKey = XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXAAA=
 
         [Peer]
         PublicKey = p8F7QN6rmS9rnsgXFKEt91kvYuGwcnOY7cURz8x7DWU=
         AllowedIPs = 10.0.0.2/32
+
+    • Next, while still inside the container, i ran the following command:
+
+        root@wireguard:~# ip route add 172.16.0.0/16 via 192.168.4.11 dev eth0
+
+        * this line will be explained in the Cisco CML section 
 
     • Then I did the same on my laptop:
 
