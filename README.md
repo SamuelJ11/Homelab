@@ -18,6 +18,8 @@
 
     • After wiping the original OS and replacing it with Proxmox, the first thing I needed to do was configure a secure VPN to my home network.  
 
+    • See ![Proxmox Setup](server-setup/images/proxmox.png) for what the web interface for proxmox looks like when your physical setup is complete.
+
     • I decided to host an LXC container running Wireguard for its customizablilty and zero dependence on third-party authentication providers or centralized management platforms.
 
     • The first thing I did was configure the Wireguard VPN configuration file on the server LXC container:
@@ -53,6 +55,8 @@
         AllowedIPs = 10.0.0.0/24, 192.168.4.0/24, 172.16.0.0/16
         Endpoint = [PUBLIC IP]:51820
         PersistentKeepalive = 21 
+
+    • See ![Proxmox Setup](server-setup/images/Wireguard_Dashboard.png) for an example of the web GUI for wireguard after successfull implementation.
 
 ### Configuring The NFS Server
 
