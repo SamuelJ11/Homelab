@@ -8,7 +8,7 @@
 
 • Originally I decided the purpose of the Dell R740XD machine was to function as a VPN server and a file server, so that I may mount a network file share to any of my devices' filesystems and access my data from anywhere in the world; so far I have not strayed too far from this original goal. 
 
-    * see [homelab architecture](server-setup/architecture.txt) for a visual representation of my overall setup
+* see [homelab architecture](server-setup/architecture.txt) for a visual representation of my overall setup
 
 • I will continually update this README as I add new services to this machine.  With that being said, equipped with nothing but the internet and sheer determination, I set out to build and document my first homelab ...
 
@@ -18,7 +18,7 @@
 
 • After wiping the original OS and replacing it with Proxmox, the first thing I needed to do was configure a secure VPN to my home network.  
 
-• See [Proxmox Setup](server-setup/images/proxmox.png) for what the web interface for proxmox looks like when your physical setup is complete.
+* see [Proxmox Setup](server-setup/images/proxmox.png) for what the web interface for proxmox looks like when your physical setup is complete
 
 • I decided to host an LXC container running Wireguard for its customizablilty and zero dependence on third-party authentication providers or centralized management platforms.
 
@@ -61,7 +61,7 @@
     PersistentKeepalive = 21 
     ```
 
-• See [Wiregurad Dashboard Setup](server-setup/images/Wireguard_Dashboard.png) for an example of the web GUI for wireguard after successfull implementation.
+*  see [Wiregurad Dashboard Setup](server-setup/images/Wireguard_Dashboard.png) for an example of the web GUI for wireguard after successfull implementation
 
 ### Configuring The NFS Server
 
